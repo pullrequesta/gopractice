@@ -1,5 +1,13 @@
 package main
 
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"time"
+)
+
 func main() {
 	// names := []string{"mario", "luigio", "peach"}
 	// for _, value := range names {
@@ -16,7 +24,7 @@ func main() {
 	// 	fmt.Println("age is perfect")
 	// }
 
-	// names := []string{"mario", "luigio", "peach", "lisa"}
+	// //names := []string{"mario", "luigio", "peach", "lisa"}
 	// for index, value := range names {
 	// 	if index == 1 {
 	// 		fmt.Println("continuing at pos", index)
@@ -69,10 +77,42 @@ func main() {
 	// updateName(m)
 	// fmt.Println(name)
 
-	s := square{length: 4, width: 3}
-	c := circle{radius: 5}
+	// s := square{length: 4, width: 3}
+	// c := circle{radius: 5}
 
-	measure(s)
-	measure(c)
+	// measure(s)
+	// measure(c)
 
+	// create a request with the context
+	ctx := context.Background()
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://bored-api.appbrewery.com/random", nil)
+	if err != nil {
+		fmt.Println("error creating request:", err)
+		return
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("error doing request:", err)
+		return
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("error invalid status code:", resp.StatusCode)
+		return
+	}
+
+	var boringRes boringResponse
+	if err := json.NewDecoder(resp.Body).Decode(&boringRes); err != nil {
+		fmt.Println("error reading json response body:", err)
+		return
+	}
+
+	fmt.Printf("%+v\n", boringRes)
 }
